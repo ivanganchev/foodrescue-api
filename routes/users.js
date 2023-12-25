@@ -19,7 +19,7 @@ router.post('/register', jsonParser, async (req, res) => {
         await user.save();
         res.status(201).send('User created');
     } catch {
-        res.status(500).send();
+        res.status(500).send("Register Failed");
     }
 });
 
@@ -34,7 +34,7 @@ router.post('/login',jsonParser, async (req, res) => {
         const token = jwt.sign(payload, jwtSecret, { expiresIn: '365d'});
         res.json({ token: 'Bearer ' + token });
     } catch (err) {
-        res.status(500).send();
+        res.status(500).send("Login Failed");
     }
 });
 
