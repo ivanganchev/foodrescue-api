@@ -4,6 +4,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const jwtSecret = process.env.JWT_SECRET;
 const bodyParser = require('body-parser');
+const verifyToken = require('../middleware/authMiddleware');
 
 var jsonParser = bodyParser.json();
 
@@ -15,7 +16,10 @@ router.post('/register', jsonParser, async (req, res) => {
         }
 
         const hashedPassword = await User.hashPassword(req.body.password);
-        const user = new User({ username: req.body.username, password: hashedPassword });
+        const user = new User({ username: req.body.username, 
+                                password: hashedPassword, 
+                                email: req.body.email, 
+                                role: req.body.role });
         await user.save();
         res.status(201).send('User created');
     } catch {
@@ -23,7 +27,7 @@ router.post('/register', jsonParser, async (req, res) => {
     }
 });
 
-router.post('/login',jsonParser, async (req, res) => {
+router.post('/login', jsonParser, async (req, res) => {
     try {
         const user = await User.findOne({ username: req.body.username });
         if (!user || !await user.comparePassword(req.body.password)) {
@@ -35,6 +39,20 @@ router.post('/login',jsonParser, async (req, res) => {
         res.json({ token: 'Bearer ' + token });
     } catch (err) {
         res.status(500).send("Login Failed");
+    }
+});
+
+router.get('/by-username/:username', verifyToken, async (req, res) => {
+    try {
+        const user = await User.findOne({ username: req.params.username });
+
+        res.status(200).json({
+            username: user.username,
+            email: user.email,
+            role: user.role
+        });
+    } catch (err) {
+        res.status(500).send("Data fetch failed")
     }
 });
 
