@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const jwtSecret = process.env.JWT_SECRET;
 const bodyParser = require('body-parser');
 const verifyToken = require('../middleware/authMiddleware');
+const ObjectId = require('mongodb').ObjectId;
 
 var jsonParser = bodyParser.json();
 
@@ -42,9 +43,9 @@ router.post('/login', jsonParser, async (req, res) => {
     }
 });
 
-router.get('/by-username/:username', verifyToken, async (req, res) => {
+router.get('/by-id/:id', verifyToken, async (req, res) => {
     try {
-        const user = await User.findOne({ username: req.params.username });
+        const user = await User.findById(new ObjectId(req.params.id))
 
         res.status(200).json({
             username: user.username,
