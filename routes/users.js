@@ -15,16 +15,17 @@ router.post('/register', jsonParser, async (req, res) => {
         if (existingUser) {
             return res.json({ token: null, message: 'Username already exists' }); 
         }
-
-        const payload = { id: user.id, username: user.username };
-        const token = jwt.sign(payload, jwtSecret, { expiresIn: '365d'});
+        
         const hashedPassword = await User.hashPassword(req.body.password);
         const user = new User({ username: req.body.username, 
                                 password: hashedPassword, 
                                 email: req.body.email});
         await user.save();
+
+        const payload = { id: user.id, username: user.username };
+        const token = jwt.sign(payload, jwtSecret, { expiresIn: '365d'});
         res.json({ token: 'Bearer ' + token, message: 'Register successful' });
-    } catch {
+    } catch (err) {
         res.json({ token: null, message: 'Register failed' });
     }
 });
@@ -50,8 +51,7 @@ router.get('/by-id/:id', verifyToken, async (req, res) => {
 
         res.status(200).json({
             username: user.username,
-            email: user.email,
-            role: user.role
+            email: user.email
         });
     } catch (err) {
         res.status(500).send("Data fetch failed")
