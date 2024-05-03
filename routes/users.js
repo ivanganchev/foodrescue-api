@@ -16,6 +16,8 @@ router.post('/register', jsonParser, async (req, res) => {
             return res.json({ token: null, message: 'Username already exists' }); 
         }
 
+        const payload = { id: user.id, username: user.username };
+        const token = jwt.sign(payload, jwtSecret, { expiresIn: '365d'});
         const hashedPassword = await User.hashPassword(req.body.password);
         const user = new User({ username: req.body.username, 
                                 password: hashedPassword, 
