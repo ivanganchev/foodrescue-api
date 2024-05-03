@@ -13,18 +13,17 @@ router.post('/register', jsonParser, async (req, res) => {
     try {
         const existingUser = await User.findOne({ username: req.body.username });
         if (existingUser) {
-            return res.status(409).send('Username already exists'); // 409 Conflict
+            return res.json({ token: null, message: 'Username already exists' }); 
         }
 
         const hashedPassword = await User.hashPassword(req.body.password);
         const user = new User({ username: req.body.username, 
                                 password: hashedPassword, 
-                                email: req.body.email, 
-                                role: req.body.role });
+                                email: req.body.email});
         await user.save();
-        res.status(201).send('User created');
+        res.json({ token: 'Bearer ' + token, message: 'Register successful' });
     } catch {
-        res.status(500).send("Register Failed");
+        res.json({ token: null, message: 'Register failed' });
     }
 });
 
@@ -32,14 +31,14 @@ router.post('/login', jsonParser, async (req, res) => {
     try {
         const user = await User.findOne({ username: req.body.username });
         if (!user || !await user.comparePassword(req.body.password)) {
-            return res.status(401).send('Invalid credentials');
+            return res.status(401).json({ token: null, message: 'Invalid credentials' });
         }
 
         const payload = { id: user.id, username: user.username };
         const token = jwt.sign(payload, jwtSecret, { expiresIn: '365d'});
-        res.json({ token: 'Bearer ' + token });
+        res.json({ token: 'Bearer ' + token, message: 'Login successful' });
     } catch (err) {
-        res.status(500).send("Login Failed");
+        res.json({ token: null, message: 'Login failed' });
     }
 });
 
