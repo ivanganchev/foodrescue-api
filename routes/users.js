@@ -13,9 +13,9 @@ router.post('/register', jsonParser, async (req, res) => {
     try {
         const existingUser = await User.findOne({ username: req.body.username });
         if (existingUser) {
-            return res.json({ token: null, message: 'Username already exists' }); 
+            return res.status(401).json({ token: null, message: 'Username already exists' }); 
         }
-        
+
         const hashedPassword = await User.hashPassword(req.body.password);
         const user = new User({ username: req.body.username, 
                                 password: hashedPassword, 
@@ -24,9 +24,9 @@ router.post('/register', jsonParser, async (req, res) => {
 
         const payload = { id: user.id, username: user.username };
         const token = jwt.sign(payload, jwtSecret, { expiresIn: '365d'});
-        res.json({ token: 'Bearer ' + token, message: 'Register successful' });
+        res.status(200).json({ token: 'Bearer ' + token, message: 'Register successful' });
     } catch (err) {
-        res.json({ token: null, message: 'Register failed' });
+        res.status(500).json({ token: null, message: 'Register failed' });
     }
 });
 
@@ -39,9 +39,9 @@ router.post('/login', jsonParser, async (req, res) => {
 
         const payload = { id: user.id, username: user.username };
         const token = jwt.sign(payload, jwtSecret, { expiresIn: '365d'});
-        res.json({ token: 'Bearer ' + token, message: 'Login successful' });
+        res.status(200).json({ token: 'Bearer ' + token, message: 'Login successful' });
     } catch (err) {
-        res.json({ token: null, message: 'Login failed' });
+        res.status(500).json({ token: null, message: 'Login failed' });
     }
 });
 
@@ -55,6 +55,23 @@ router.get('/by-id/:id', verifyToken, async (req, res) => {
         });
     } catch (err) {
         res.status(500).send("Data fetch failed")
+    }
+});
+
+router.post('/addRole', jsonParser, async (req, res) => {
+    try {
+        const { username, role } = req.body;
+        const user = await User.findOne({ username });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        user.role = role;
+        await user.save();
+
+        res.json({ message: 'Role updated successfully' });
+    } catch (err) {
+        res.status(500).json({ message: 'Failed to update role' });
     }
 });
 
