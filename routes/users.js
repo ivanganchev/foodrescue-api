@@ -39,7 +39,11 @@ router.post('/login', jsonParser, async (req, res) => {
 
         const payload = { id: user.id, username: user.username };
         const token = jwt.sign(payload, jwtSecret, { expiresIn: '365d'});
-        res.status(200).json({ token: 'Bearer ' + token, message: 'Login successful' });
+        res.status(200).json({ 
+                                token: 'Bearer ' + token, 
+                                message: 'Login successful', 
+                                user: { username: user.username, email: user.email, role: user.role } 
+                            });
     } catch (err) {
         res.status(500).json({ token: null, message: 'Login failed' });
     }
@@ -58,7 +62,7 @@ router.get('/by-id/:id', verifyToken, async (req, res) => {
     }
 });
 
-router.post('/addRole', jsonParser, async (req, res) => {
+router.post('/addRole', verifyToken, jsonParser, async (req, res) => {
     try {
         const { username, role } = req.body;
         const user = await User.findOne({ username });
