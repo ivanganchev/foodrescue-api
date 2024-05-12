@@ -24,7 +24,10 @@ router.post('/register', jsonParser, async (req, res) => {
 
         const payload = { id: user.id, username: user.username };
         const token = jwt.sign(payload, jwtSecret, { expiresIn: '365d'});
-        res.status(200).json({ token: 'Bearer ' + token, message: 'Register successful' });
+        res.status(200).json({ token: 'Bearer ' + token, 
+                               message: 'Register successful',
+                               user: { username: user.username, email: user.email, role: user.role }
+                             });
     } catch (err) {
         res.status(500).json({ token: null, message: 'Register failed' });
     }
