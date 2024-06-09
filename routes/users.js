@@ -17,7 +17,8 @@ router.post('/register', jsonParser, async (req, res) => {
         }
 
         const hashedPassword = await User.hashPassword(req.body.password);
-        const user = new User({ username: req.body.username, 
+        const user = new User({ userId: req.body.userId,
+                                username: req.body.username, 
                                 password: hashedPassword, 
                                 email: req.body.email});
         await user.save();
@@ -45,7 +46,7 @@ router.post('/login', jsonParser, async (req, res) => {
         res.status(200).json({ 
                                 token: 'Bearer ' + token, 
                                 message: 'Login successful', 
-                                user: { username: user.username, email: user.email, role: user.role } 
+                                user: { userId: user.userId, username: user.username, email: user.email, role: user.role } 
                             });
     } catch (err) {
         res.status(500).json({ token: null, message: 'Login failed' });
@@ -67,9 +68,9 @@ router.get('/by-id/:id', verifyToken, async (req, res) => {
 
 router.post('/addRole', verifyToken, jsonParser, async (req, res) => {
     try {
-        const { username, role } = req.body;
-        const user = await User.findOne({ username });
-
+        const { userId, role } = req.body;
+        const user = await User.findOne({ userId });
+        
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
