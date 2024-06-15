@@ -46,7 +46,7 @@ router.post('/login', jsonParser, async (req, res) => {
         res.status(200).json({ 
                                 token: 'Bearer ' + token, 
                                 message: 'Login successful', 
-                                user: { userId: user.userId, username: user.username, email: user.email, role: user.role } 
+                                user: { id: user.userId, username: user.username, email: user.email, role: user.role } 
                             });
     } catch (err) {
         res.status(500).json({ token: null, message: 'Login failed' });
