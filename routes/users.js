@@ -83,4 +83,8 @@ router.post('/addRole', verifyToken, jsonParser, async (req, res) => {
     }
 });
 
+router.get('/verify-token', verifyToken, (req, res) => {
+    res.status(200).json({ message: 'Token is valid' });
+});
+
 module.exports = router;
