@@ -24,7 +24,7 @@ router.post('/register', jsonParser, async (req, res) => {
         await user.save();
 
         const payload = { id: user.id, username: user.username };
-        const token = jwt.sign(payload, jwtSecret, { expiresIn: '365d'});
+        const token = jwt.sign(payload, jwtSecret, { expiresIn: '60s'});
         res.status(200).json({ token: 'Bearer ' + token, 
                                message: 'Register successful',
                                user: { id: user.userId, username: user.username, email: user.email, role: user.role }
@@ -42,7 +42,7 @@ router.post('/login', jsonParser, async (req, res) => {
         }
 
         const payload = { id: user.id, username: user.username };
-        const token = jwt.sign(payload, jwtSecret, { expiresIn: '2m'});
+        const token = jwt.sign(payload, jwtSecret, { expiresIn: '60s'});
         res.status(200).json({ 
                                 token: 'Bearer ' + token, 
                                 message: 'Login successful', 
