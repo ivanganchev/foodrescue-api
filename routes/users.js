@@ -42,7 +42,7 @@ router.post('/login', jsonParser, async (req, res) => {
         }
 
         const payload = { id: user.id, username: user.username };
-        const token = jwt.sign(payload, jwtSecret, { expiresIn: '365d'});
+        const token = jwt.sign(payload, jwtSecret, { expiresIn: '2min'});
         res.status(200).json({ 
                                 token: 'Bearer ' + token, 
                                 message: 'Login successful', 
