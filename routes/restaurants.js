@@ -28,6 +28,8 @@ router.post('/create', verifyToken, jsonParser, upload.single('image'), async (r
         if (!file) {
             return res.status(400).json({ message: 'Image file is required' });
         }
+        
+        console.log('AWS_BUCKET_NAME:', process.env.AWS_BUCKET_NAME);
 
         const fileStream = fs.createReadStream(file.path);
         const s3Params = {
