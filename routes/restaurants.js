@@ -45,7 +45,7 @@ router.post('/create', verifyToken, jsonParser, upload.single('image'), async (r
 
             if (err) {
                 console.error('S3 Upload Error:', err);
-                return res.status(500).json({ message: 'Error uploading to S3' });
+                return res.status(500).json({ message: err.message || 'Error uploading to S3' });
             }
 
             const newRestaurant = new Restaurant({
