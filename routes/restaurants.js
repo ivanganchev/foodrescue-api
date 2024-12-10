@@ -22,7 +22,7 @@ const upload = multer({ dest: 'uploads/' });
 
 router.post('/create', verifyToken, jsonParser, upload.single('image'), async (req, res) => {
     try {
-        const { ownerId, name, description } = req.body;
+        const { ownerId, name, description, latitude, longitude } = req.body;
         const file = req.file;
 
         if (!file) {
@@ -54,7 +54,9 @@ router.post('/create', verifyToken, jsonParser, upload.single('image'), async (r
                 ownerId,
                 name,
                 description,
-                images: [data.Location]
+                images: [data.Location],
+                latitude: parseFloat(latitude),
+                longitude: parseFloat(longitude)
             });
 
             await newRestaurant.save();
@@ -66,6 +68,16 @@ router.post('/create', verifyToken, jsonParser, upload.single('image'), async (r
         });
     } catch (error) {
         console.error('Error creating restaurant:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+router.get('/', verifyToken, async (req, res) => {
+    try {
+        const restaurants = await Restaurant.find();
+        res.status(200).json(restaurants);
+    } catch (error) {
+        console.error('Error fetching restaurants:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
