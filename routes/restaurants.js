@@ -74,7 +74,7 @@ router.post('/create', verifyToken, jsonParser, upload.single('image'), async (r
 
 router.get('/', verifyToken, async (req, res) => {
     try {
-        const restaurants = await Restaurant.find().select('-_id');
+        const restaurants = await Restaurant.find().select('-_id').select('-__v');
         res.status(200).json(restaurants);
     } catch (error) {
         console.error('Error fetching restaurants:', error);
