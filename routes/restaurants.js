@@ -61,10 +61,11 @@ router.post('/create', verifyToken, jsonParser, upload.single('image'), async (r
 
             await newRestaurant.save();
 
-            res.status(201).json({
-                message: 'Restaurant created successfully',
-                restaurant: newRestaurant
-            });
+            const restaurantObject = newRestaurant.toObject();
+            delete restaurantObject._id;
+            delete restaurantObject.__v;
+
+            res.status(201).json(restaurantObject);
         });
     } catch (error) {
         console.error('Error creating restaurant:', error);
