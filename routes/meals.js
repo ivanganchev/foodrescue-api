@@ -1,11 +1,8 @@
 const express = require('express');
-const Restaurant = require('../models/restaurant');
+const Meal = require('../models/meal');
 const router = express.Router();
-const jwt = require('jsonwebtoken');
-const jwtSecret = process.env.JWT_SECRET;
 const bodyParser = require('body-parser');
 const verifyToken = require('../middleware/authMiddleware');
-const ObjectId = require('mongodb').ObjectId;
 const multer = require('multer');
 const AWS = require('aws-sdk');
 const fs = require('fs');
@@ -22,19 +19,17 @@ const upload = multer({ dest: 'uploads/' });
 
 router.post('/create', verifyToken, jsonParser, upload.single('image'), async (req, res) => {
     try {
-        const { id, ownerId, name, description, latitude, longitude } = req.body;
+        const { name, description, price, restaurantId } = req.body;
         const file = req.file;
 
         if (!file) {
             return res.status(400).json({ message: 'Image file is required' });
         }
-        
-        console.log('AWS_BUCKET_NAME:', process.env.AWS_BUCKET_NAME);
 
         const fileStream = fs.createReadStream(file.path);
         const s3Params = {
             Bucket: process.env.AWS_BUCKET_NAME,
-            Key: `restaurants/${Date.now()}-${file.originalname}`,
+            Key: `meals/${Date.now()}-${file.originalname}`,
             Body: fileStream,
             ContentType: file.mimetype,
             ACL: 'public-read'
@@ -50,36 +45,24 @@ router.post('/create', verifyToken, jsonParser, upload.single('image'), async (r
                 return res.status(500).json({ message: err.message || 'Error uploading to S3' });
             }
 
-            const newRestaurant = new Restaurant({
-                id,
-                ownerId,
+            const newMeal = new Meal({
                 name,
                 description,
-                images: [data.Location],
-                latitude: parseFloat(latitude),
-                longitude: parseFloat(longitude)
+                price,
+                image: data.Location,
+                restaurantId
             });
 
-            await newRestaurant.save();
+            await newMeal.save();
 
-            const restaurantObject = newRestaurant.toObject();
-            delete restaurantObject._id;
-            delete restaurantObject.__v;
+            const mealObject = newMeal.toObject();
+            delete mealObject._id;
+            delete mealObject.__v;
 
-            res.status(201).json(restaurantObject);
+            res.status(201).json(mealObject);
         });
     } catch (error) {
-        console.error('Error creating restaurant:', error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-});
-
-router.get('/', verifyToken, async (req, res) => {
-    try {
-        const restaurants = await Restaurant.find().select('-_id').select('-__v');
-        res.status(200).json(restaurants);
-    } catch (error) {
-        console.error('Error fetching restaurants:', error);
+        console.error('Error creating meal:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
