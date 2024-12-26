@@ -67,4 +67,15 @@ router.post('/create', verifyToken, jsonParser, upload.single('image'), async (r
     }
 });
 
+router.get('/by-restaurant/:restaurantId', verifyToken, async (req, res) => {
+    try {
+        const { restaurantId } = req.params;
+        const meals = await Meal.find({ restaurantId }).select('-_id -__v');
+        res.status(200).json(meals);
+    } catch (error) {
+        console.error('Error fetching meals:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
 module.exports = router;
