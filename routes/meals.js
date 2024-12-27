@@ -79,7 +79,7 @@ router.get('/by-restaurant/:restaurantId', verifyToken, async (req, res) => {
     }
 });
 
-router.delete('/:id', verifyToken, async (req, res) => {
+router.delete('/delete/:id', verifyToken, async (req, res) => {
     try {
         const { id } = req.params;
         const meal = await Meal.findOne({ id });
