@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
 const RestaurantSchema = new mongoose.Schema({
-    id: String,
+    id: { type: String, required: true, unique: true },
     ownerId: String,
     name: String,
     description: String,

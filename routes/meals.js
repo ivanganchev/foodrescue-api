@@ -19,7 +19,7 @@ const upload = multer({ dest: 'uploads/' });
 
 router.post('/create', verifyToken, jsonParser, upload.single('image'), async (req, res) => {
     try {
-        const { name, description, price, restaurantId } = req.body;
+        const { id, name, description, price, restaurantId } = req.body;
         const file = req.file;
 
         if (!file) {
@@ -46,6 +46,7 @@ router.post('/create', verifyToken, jsonParser, upload.single('image'), async (r
             }
 
             const newMeal = new Meal({
+                id,
                 name,
                 description,
                 price,
@@ -74,6 +75,24 @@ router.get('/by-restaurant/:restaurantId', verifyToken, async (req, res) => {
         res.status(200).json(meals);
     } catch (error) {
         console.error('Error fetching meals:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+router.delete('/:id', verifyToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const meal = await Meal.findOne({ id });
+
+        if (!meal) {
+            return res.status(404).json({ message: 'Meal not found' });
+        }
+
+        await Meal.deleteOne({ id });
+
+        res.status(200).json({ message: 'Meal deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting meal:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
