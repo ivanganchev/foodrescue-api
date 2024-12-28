@@ -82,11 +82,14 @@ router.get('/by-restaurant/:restaurantId', verifyToken, async (req, res) => {
 router.delete('/delete/:id', verifyToken, async (req, res) => {
     try {
         const { id } = req.params;
-        console.log('Received ID:', id);
+
         const meal = await Meal.findOne({ id });
 
         if (!meal) {
-            return res.status(404).json({ message: 'Meal not found' });
+            return res.status(404).json({ 
+                message: 'Meal not found',
+                debug: `No meal found with ID: ${id}` // Add debug info
+            });
         }
 
         await Meal.deleteOne({ id });
