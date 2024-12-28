@@ -82,6 +82,7 @@ router.get('/by-restaurant/:restaurantId', verifyToken, async (req, res) => {
 router.delete('/delete/:id', verifyToken, async (req, res) => {
     try {
         const { id } = req.params;
+        console.log('Received ID:', id);
         const meal = await Meal.findOne({ id });
 
         if (!meal) {
