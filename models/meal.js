@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
 const MealSchema = new mongoose.Schema({
-    id: { type: String, required: true, unique: true },
+    id: String,
     name: String,
     description: String,
     price: String,
