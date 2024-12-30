@@ -9,6 +9,7 @@ const ObjectId = require('mongodb').ObjectId;
 const multer = require('multer');
 const AWS = require('aws-sdk');
 const fs = require('fs');
+const io = require('../app');
 
 var jsonParser = bodyParser.json();
 
@@ -65,6 +66,8 @@ router.post('/create', verifyToken, jsonParser, upload.single('image'), async (r
             const restaurantObject = newRestaurant.toObject();
             delete restaurantObject._id;
             delete restaurantObject.__v;
+
+            req.io.emit('newRestaurant', restaurantObject);
 
             res.status(201).json(restaurantObject);
         });

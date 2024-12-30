@@ -6,6 +6,7 @@ const verifyToken = require('../middleware/authMiddleware');
 const multer = require('multer');
 const AWS = require('aws-sdk');
 const fs = require('fs');
+const io = require('../app');
 
 var jsonParser = bodyParser.json();
 
@@ -60,6 +61,8 @@ router.post('/create', verifyToken, jsonParser, upload.single('image'), async (r
             delete mealObject._id;
             delete mealObject.__v;
 
+            req.io.emit('newMeal', mealObject);
+
             res.status(201).json(mealObject);
         });
     } catch (error) {
@@ -82,17 +85,15 @@ router.get('/by-restaurant/:restaurantId', verifyToken, async (req, res) => {
 router.delete('/delete/:id', verifyToken, async (req, res) => {
     try {
         const { id } = req.params;
-
         const meal = await Meal.findOne({ id });
 
         if (!meal) {
-            return res.status(404).json({ 
-                message: 'Meal not found',
-                debug: `No meal found with ID: ${id}` // Add debug info
-            });
+            return res.status(404).json({ message: 'Meal not found' });
         }
 
         await Meal.deleteOne({ id });
+
+        req.io.emit(Events.DELETE_MEAL, { id });
 
         res.status(200).json({ message: 'Meal deleted successfully' });
     } catch (error) {
