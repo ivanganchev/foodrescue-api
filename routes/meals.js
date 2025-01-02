@@ -94,7 +94,7 @@ router.delete('/delete/:id', verifyToken, async (req, res) => {
         const deletedMeal = meal.toObject();
         await Meal.deleteOne({ id });
 
-        req.io.emit(Events.DELETE_MEAL, deletedMeal);
+        req.io.emit("deleteMeal", deletedMeal);
 
         res.status(200).json({ message: 'Meal deleted successfully' });
     } catch (error) {
