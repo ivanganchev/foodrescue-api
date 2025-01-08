@@ -7,7 +7,10 @@ const MealSchema = new mongoose.Schema({
     description: String,
     price: String,
     image: String,
-    restaurantId: String
+    restaurantId: String,
+    reserved: Boolean, 
+    reservationExpiresAt: Date,
+    reservedBy: String
 });
 
 module.exports = mongoose.model('Meal', MealSchema);

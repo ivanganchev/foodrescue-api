@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const verifyToken = require('../middleware/authMiddleware');
 const multer = require('multer');
 const AWS = require('aws-sdk');
+const cron = require('node-cron');
 const fs = require('fs');
 const io = require('../app');
 
@@ -100,6 +101,50 @@ router.delete('/delete/:id', verifyToken, async (req, res) => {
     } catch (error) {
         console.error('Error deleting meal:', error);
         res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+router.post('/reserve', verifyToken, jsonParser, async (req, res) => {
+    try {
+        const { id, reservationTime, userId } = req.body;
+
+        const meal = await Meal.findOne({ id });
+
+        if (!meal) {
+            return res.status(404).json({ message: 'Meal not found' });
+        }
+
+        if (meal.reserved) {
+            return res.status(400).json({ message: 'Meal is already reserved' });
+        }
+
+        const reservationExpiresAt = new Date(Date.now() + reservationTime * 60000); 
+
+        meal.reserved = true;
+        meal.reservationExpiresAt = reservationExpiresAt;
+        meal.reservedBy = userId;
+        await meal.save();
+
+        req.io.emit("reserveMeal", { id, reservationExpiresAt, reservedBy: userId });
+
+        res.status(200).json({reservationExpiresAt});
+    } catch (error) {
+        console.error('Error reserving meal:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+cron.schedule('* * * * *', async () => {
+    const now = new Date();
+    const meals = await Meal.find({ reserved: true, reservationExpiresAt: { $lte: now } });
+
+    for (const meal of meals) {
+        meal.reserved = false;
+        meal.reservationExpiresAt = null;
+        meal.reservedBy = null;
+        await meal.save();
+
+        io.emit("releaseMeal", { id: meal.id });
     }
 });
 
