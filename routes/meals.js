@@ -134,18 +134,4 @@ router.post('/reserve', verifyToken, jsonParser, async (req, res) => {
     }
 });
 
-cron.schedule('* * * * *', async () => {
-    const now = new Date();
-    const meals = await Meal.find({ reserved: true, reservationExpiresAt: { $lte: now } });
-
-    for (const meal of meals) {
-        meal.reserved = false;
-        meal.reservationExpiresAt = null;
-        meal.reservedBy = null;
-        await meal.save();
-
-        io.emit("releaseMeal", { id: meal.id });
-    }
-});
-
 module.exports = router;
