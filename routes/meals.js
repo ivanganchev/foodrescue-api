@@ -114,7 +114,10 @@ router.post('/updateReservation', verifyToken, jsonParser, async (req, res) => {
             return res.status(404).json({ message: 'Meal not found' });
         }
 
-        if (action === 'reserve' && meal.reserved) {
+        const now = new Date();
+        const isReservationExpired = meal.reservationExpiresAt && meal.reservationExpiresAt <= now;
+
+        if (action === 'reserve' && meal.reserved && !isReservationExpired) {
             return res.status(400).json({ message: 'Meal is already reserved' });
         }
 
@@ -128,7 +131,6 @@ router.post('/updateReservation', verifyToken, jsonParser, async (req, res) => {
         req.io.emit(action === 'reserve' ? "mealReserved" : "mealReleased", { id, reservationExpiresAt, reservedBy: userId });
 
         res.status(200).json({reservationExpiresAt});
-        // res.status(200).json({ message: action === 'reserve' ? 'Meal reserved successfully' : 'Reservation released successfully', meal });
     } catch (error) {
         console.error('Error processing reservation:', error);
         res.status(500).json({ message: 'Internal server error' });
