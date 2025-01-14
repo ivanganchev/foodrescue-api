@@ -108,6 +108,8 @@ router.post('/reserve', verifyToken, jsonParser, async (req, res) => {
     try {
         const { id, reservationTime, userId } = req.body;
 
+        console.log('Received id:', id);
+
         const meal = await Meal.findOne({ id });
 
         if (!meal) {
