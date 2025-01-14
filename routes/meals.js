@@ -104,9 +104,9 @@ router.delete('/delete/:id', verifyToken, async (req, res) => {
     }
 });
 
-router.post('/reserve', verifyToken, jsonParser, async (req, res) => {
+router.post('/updateReservation', verifyToken, jsonParser, async (req, res) => {
     try {
-        const { id, reservationTime, userId } = req.body;
+        const { id, reservationTime, userId, action } = req.body; // Add action to determine create or update
 
         const meal = await Meal.findOne({ id });
 
@@ -114,22 +114,23 @@ router.post('/reserve', verifyToken, jsonParser, async (req, res) => {
             return res.status(404).json({ message: 'Meal not found' });
         }
 
-        if (meal.reserved) {
+        if (action === 'reserve' && meal.reserved) {
             return res.status(400).json({ message: 'Meal is already reserved' });
         }
 
-        const reservationExpiresAt = new Date(Date.now() + reservationTime * 60000); 
+        const reservationExpiresAt = action === 'reserve' ? new Date(Date.now() + reservationTime * 60000) : null; // Convert minutes to milliseconds
 
-        meal.reserved = true;
+        meal.reserved = action === 'reserve';
         meal.reservationExpiresAt = reservationExpiresAt;
-        meal.reservedBy = userId;
+        meal.reservedBy = action === 'reserve' ? userId : null;
         await meal.save();
 
-        req.io.emit("reserveMeal", { id, reservationExpiresAt, reservedBy: userId });
+        req.io.emit(action === 'reserve' ? "mealReserved" : "mealReleased", { id, reservationExpiresAt, reservedBy: userId });
 
         res.status(200).json({reservationExpiresAt});
+        // res.status(200).json({ message: action === 'reserve' ? 'Meal reserved successfully' : 'Reservation released successfully', meal });
     } catch (error) {
-        console.error('Error reserving meal:', error);
+        console.error('Error processing reservation:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
