@@ -106,7 +106,7 @@ router.delete('/delete/:id', verifyToken, async (req, res) => {
 
 router.post('/updateReservation', verifyToken, jsonParser, async (req, res) => {
     try {
-        const { id, reservationTime, userId, action } = req.body; // Add action to determine create or update
+        const { id, reservationTime, userId, action } = req.body;
 
         const meal = await Meal.findOne({ id });
 
@@ -121,7 +121,7 @@ router.post('/updateReservation', verifyToken, jsonParser, async (req, res) => {
             return res.status(400).json({ message: 'Meal is already reserved' });
         }
 
-        const reservationExpiresAt = action === 'reserve' ? new Date(Date.now() + reservationTime * 60000) : null; // Convert minutes to milliseconds
+        const reservationExpiresAt = action === 'reserve' ? new Date(Date.now() + reservationTime * 60000) : null; 
 
         meal.reserved = action === 'reserve';
         meal.reservationExpiresAt = reservationExpiresAt;

@@ -87,4 +87,15 @@ router.get('/', verifyToken, async (req, res) => {
     }
 });
 
+router.get('/by-owner/:ownerId', verifyToken, async (req, res) => {
+    try {
+        const { ownerId } = req.params;
+        const restaurants = await Restaurant.find({ ownerId }).select('-_id').select('-__v');
+        res.status(200).json(restaurants);
+    } catch (error) {
+        console.error('Error fetching restaurants:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
 module.exports = router;
