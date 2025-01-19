@@ -53,7 +53,10 @@ router.post('/create', verifyToken, jsonParser, upload.single('image'), async (r
                 description,
                 price,
                 image: data.Location,
-                restaurantId
+                restaurantId,
+                reserved: false,
+                reservationExpiresAt: null,
+                reservedBy: null
             });
 
             await newMeal.save();
@@ -72,10 +75,15 @@ router.post('/create', verifyToken, jsonParser, upload.single('image'), async (r
     }
 });
 
-router.get('/by-restaurant/:restaurantId', verifyToken, async (req, res) => {
+router.post('/by-restaurants', verifyToken, jsonParser, async (req, res) => {
     try {
-        const { restaurantId } = req.params;
-        const meals = await Meal.find({ restaurantId }).select('-_id -__v');
+        const { restaurantIds } = req.body;
+
+        if (!Array.isArray(restaurantIds) || restaurantIds.length === 0) {
+            return res.status(400).json({ message: 'restaurantIds must be a non-empty array' });
+        }
+
+        const meals = await Meal.find({ restaurantId: { $in: restaurantIds } }).select('-_id -__v');
         res.status(200).json(meals);
     } catch (error) {
         console.error('Error fetching meals:', error);
