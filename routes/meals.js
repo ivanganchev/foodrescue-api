@@ -1,5 +1,6 @@
 const express = require('express');
 const Meal = require('../models/meal');
+const User = require('../models/user');
 const router = express.Router();
 const bodyParser = require('body-parser');
 const verifyToken = require('../middleware/authMiddleware');
@@ -129,16 +130,22 @@ router.post('/updateReservation', verifyToken, jsonParser, async (req, res) => {
             return res.status(400).json({ message: 'Meal is already reserved' });
         }
 
-        const reservationExpiresAt = action === 'reserve' ? new Date(Date.now() + reservationTime * 60000) : null; 
+        const reservationExpiresAt = action === 'reserve' ? new Date(Date.now() + reservationTime * 60000) : null;
 
         meal.reserved = action === 'reserve';
         meal.reservationExpiresAt = reservationExpiresAt;
         meal.reservedBy = action === 'reserve' ? userId : null;
         await meal.save();
 
-        req.io.emit(action === 'reserve' ? "mealReserved" : "mealReleased", { id, reservationExpiresAt, reservedBy: userId });
+        let reservedByUser = null;
+        if (action === 'reserve') {
+            const user = await User.findOne({ userId }).select('username');
+            reservedByUser = user ? user.username : null;
+        }
 
-        res.status(200).json({reservationExpiresAt});
+        req.io.emit(action === 'reserve' ? "mealReserved" : "mealReleased", { id, reservationExpiresAt, reservedBy: reservedByUser });
+
+        res.status(200).json({ reservationExpiresAt, reservedBy: reservedByUser });
     } catch (error) {
         console.error('Error processing reservation:', error);
         res.status(500).json({ message: 'Internal server error' });
